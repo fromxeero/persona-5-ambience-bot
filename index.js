@@ -1,3 +1,7 @@
+// Global Var
+let currentResource = null; 
+let globalVolume = 0.5; // Default Vol of 50%
+
 // Bot Init
 
 const { Client, GatewayIntentBits } = require('discord.js');
@@ -49,6 +53,7 @@ function loadShuffledPlaylist() {
 }
 
 // Play next song, if no more then message that out of songs
+
 function playNext() {
     if (playlist.length === 0) {
         if (currentTextChannel) currentTextChannel.send("🛑 Reached the end of the shuffled playlist!");
@@ -62,9 +67,13 @@ function playNext() {
         currentTextChannel.send(`🎶 Now playing: **${songName}**`);
     }
 
-    // Play the audio
-    const resource = createAudioResource(nextSongPath);
-    player.play(resource);
+    // Inline vol enable
+    currentResource = createAudioResource(nextSongPath, { inlineVolume: true });
+    
+    // Global vol application
+    currentResource.volume.setVolume(globalVolume);
+
+    player.play(currentResource);
 }
 
 client.once('ready', () => {
@@ -91,22 +100,22 @@ client.on('messageCreate', async (message) => {
             return message.reply("The `music` folder is empty! Put some .mp3 files there first.");
         }
 
-        // Connect to voice channel
+        // vc connect
         connection = joinVoiceChannel({
             channelId: voiceChannel.id,
             guildId: message.guild.id,
             adapterCreator: message.guild.voiceAdapterCreator,
         });
 
-        // Initialize audio player if it doesn't exist
+        // Create audio player if not already
         if (!player) {
             player = createAudioPlayer();
 
-            // When a song finishes, automatically play the next one
+            // Autoplay next song
             player.on(AudioPlayerStatus.Idle, () => {
                 playNext();
             });
-
+            // Error
             player.on('error', error => {
                 console.error(`Error: ${error.message}`);
                 playNext();
@@ -121,7 +130,7 @@ client.on('messageCreate', async (message) => {
     if (command === 'skip') {
         if (player && player.state.status !== AudioPlayerStatus.Idle) {
             message.channel.send("⏭️ Skipped current track.");
-            player.stop(); // This triggers the 'Idle' state listener, forcing playNext()
+            player.stop(); // Idle State
         } else {
             message.reply("Nothing is playing right now.");
         }
@@ -138,7 +147,34 @@ client.on('messageCreate', async (message) => {
             message.reply("I'm not connected to a voice channel.");
         }
     }
+
+   // !vol
+    if (command === 'volume' || command === 'vol') {
+        const volArg = args[0];
+
+        // Print current volume when no amount given
+        if (!volArg) {
+            return message.reply(`🔊 Current volume is at **${Math.round(globalVolume * 100)}%**`);
+        }
+
+        const volumePercent = parseInt(volArg, 10);
+
+        // Validating input
+        if (isNaN(volumePercent) || volumePercent < 0 || volumePercent > 100) {
+            return message.reply("❌ Please enter a valid number between **0 and 100**.");
+        }
+
+        // int to float scale
+        globalVolume = volumePercent / 100;
+
+        // Fade volume if active media
+        if (currentResource && currentResource.volume) {
+            currentResource.volume.setVolume(globalVolume);
+        }
+
+        return message.channel.send(`🎚️ Volume set to **${volumePercent}%**`);
+    }
 });
 
-// Toggle "Message Content Intent" in Discord Dev Portal for this token to work
+// Enable "Message Content Intent" in Dev Portal for token to work
 client.login('YOUR_BOT_TOKEN_HERE');
