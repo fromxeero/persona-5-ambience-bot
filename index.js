@@ -24,7 +24,7 @@ const client = new Client({
     ]
 });
 
-const PREFIX = '!';
+const PREFIX = '?';
 const MUSIC_DIR = path.join(__dirname, 'Music Files');
 
 let playlist = [];
@@ -177,4 +177,4 @@ client.on('messageCreate', async (message) => {
 });
 
 // Enable "Message Content Intent" in Dev Portal for token to work
-client.login('INSERT TOKEN HERE');
+client.login('INSERTTOKENHERE');
