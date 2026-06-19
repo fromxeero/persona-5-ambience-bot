@@ -177,4 +177,4 @@ client.on('messageCreate', async (message) => {
 });
 
 // Enable "Message Content Intent" in Dev Portal for token to work
-client.login('TOKEN');
+client.login('INSERT TOKEN HERE');
