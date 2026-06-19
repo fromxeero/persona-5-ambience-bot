@@ -56,7 +56,7 @@ function loadShuffledPlaylist() {
 
 function playNext() {
     if (playlist.length === 0) {
-        if (currentTextChannel) currentTextChannel.send("🛑 Reached the end of the shuffled playlist!");
+        if (currentTextChannel) currentTextChannel.send("You have reached the end... for now");
         return;
     }
 
@@ -64,7 +64,7 @@ function playNext() {
     const songName = path.basename(nextSongPath);
 
     if (currentTextChannel) {
-        currentTextChannel.send(`🎶 Now playing: **${songName}**`);
+        currentTextChannel.send('Now playing: **${songName}**`');
     }
 
     // Inline vol enable
@@ -90,14 +90,14 @@ client.on('messageCreate', async (message) => {
     if (command === 'play') {
         const voiceChannel = message.member.voice.channel;
         if (!voiceChannel) {
-            return message.reply("You need to be in a voice channel to use this command!");
+            return message.reply("You need to be in VC to use this command!");
         }
 
         currentTextChannel = message.channel;
         playlist = loadShuffledPlaylist();
 
         if (playlist.length === 0) {
-            return message.reply("The `music` folder is empty! Put some .mp3 files there first.");
+            return message.reply("The folder containing music is empty! Put some files there first.");
         }
 
         // vc connect
@@ -123,13 +123,13 @@ client.on('messageCreate', async (message) => {
         }
 
         connection.subscribe(player);
-        message.channel.send(`🔀 Loaded and shuffled **${playlist.length}** songs. Starting playback!`);
+        message.channel.send(`Loaded and shuffled **${playlist.length}** songs. Playback Starting...`);
         playNext();
     }
 
     if (command === 'skip') {
         if (player && player.state.status !== AudioPlayerStatus.Idle) {
-            message.channel.send("⏭️ Skipped current track.");
+            message.channel.send("Skipped current track.");
             player.stop(); // Idle State
         } else {
             message.reply("Nothing is playing right now.");
@@ -142,7 +142,7 @@ client.on('messageCreate', async (message) => {
         if (connection) {
             connection.destroy();
             connection = null;
-            message.channel.send("⏹️ Stopped playback and left the voice channel.");
+            message.channel.send("Stopped playback and left the voice channel.");
         } else {
             message.reply("I'm not connected to a voice channel.");
         }
@@ -154,14 +154,14 @@ client.on('messageCreate', async (message) => {
 
         // Print current volume when no amount given
         if (!volArg) {
-            return message.reply(`🔊 Current volume is at **${Math.round(globalVolume * 100)}%**`);
+            return message.reply('Current volume is **${Math.round(globalVolume * 100)}%**`');
         }
 
         const volumePercent = parseInt(volArg, 10);
 
         // Validating input
         if (isNaN(volumePercent) || volumePercent < 0 || volumePercent > 100) {
-            return message.reply("❌ Please enter a valid number between **0 and 100**.");
+            return message.reply("Not a valid volume level");
         }
 
         // int to float scale
@@ -172,7 +172,7 @@ client.on('messageCreate', async (message) => {
             currentResource.volume.setVolume(globalVolume);
         }
 
-        return message.channel.send(`🎚️ Volume set to **${volumePercent}%**`);
+        return message.channel.send(`Volume set to **${volumePercent}%**`);
     }
 });
 
